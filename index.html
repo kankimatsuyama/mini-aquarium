@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mini aquarium</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+  .tank {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 240px;
+    background: linear-gradient(180deg,
+      #dff1f6 0%,
+      #cfeaf1 22%,
+      #bfe2ec 48%,
+      #aed9e6 72%,
+      #b8ddd8 100%);
+    overflow: hidden;
+    font-family: sans-serif;
+  }
+
+  /* 水面の光のゆらぎ */
+  .caustics {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(120px 60px at 20% 15%, rgba(255,255,255,.55), transparent 70%),
+      radial-gradient(160px 70px at 55% 10%, rgba(255,255,255,.45), transparent 70%),
+      radial-gradient(140px 60px at 80% 18%, rgba(255,255,255,.5), transparent 70%);
+    mix-blend-mode: screen;
+    animation: shimmer 9s ease-in-out infinite alternate;
+  }
+  @keyframes shimmer {
+    0%   { transform: translateX(-20px) scaleY(1);   opacity: .8; }
+    100% { transform: translateX(20px)  scaleY(1.08); opacity: 1; }
+  }
+
+  /* 日差し */
+  .rays {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(105deg, transparent 30%, rgba(255,255,255,.25) 38%, transparent 46%),
+      linear-gradient(80deg, transparent 55%, rgba(255,255,255,.18) 62%, transparent 70%);
+    animation: rays 12s ease-in-out infinite alternate;
+  }
+  @keyframes rays { 0%{opacity:.5} 100%{opacity:.9} }
+
+  /* 砂地 */
+  .sand {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 16%;
+    background: linear-gradient(180deg, rgba(228,238,224,0) 0%, #e8f0df 60%, #dfe9d4 100%);
+  }
+
+  /* 水草 */
+  .plant { position: absolute; bottom: 6%; transform-origin: bottom center; }
+  .plant svg { display: block; }
+  .p1 { left: 8%;  animation: sway 5.5s ease-in-out infinite alternate; }
+  .p2 { left: 16%; animation: sway 6.8s ease-in-out infinite alternate; transform: scale(.8); }
+  .p3 { right: 12%; animation: sway 6.2s ease-in-out infinite alternate-reverse; }
+  .p4 { right: 22%; animation: sway 7.4s ease-in-out infinite alternate; transform: scale(.7); }
+  @keyframes sway { 0%{transform:rotate(-4deg)} 100%{transform:rotate(4deg)} }
+
+  /* 魚 */
+  .fish { position: absolute; will-change: transform; }
+  .fish .body { animation: wiggle 1.6s ease-in-out infinite; transform-origin: center; }
+  @keyframes wiggle {
+    0%,100% { transform: rotate(-1.5deg); }
+    50%     { transform: rotate(1.5deg); }
+  }
+
+  .koi1 { top: 38%; animation: swimR 26s linear infinite; }
+  .koi2 { top: 58%; animation: swimL 32s linear infinite; }
+  .koi3 { top: 30%; animation: swimR 38s linear infinite; transform: scale(.75); }
+
+  @keyframes swimR {
+    0%   { left: -16%; }
+    49%  { left: 110%; transform: scaleX(1); }
+    50%  { left: 110%; transform: scaleX(-1); }
+    99%  { left: -16%; transform: scaleX(-1); }
+    100% { left: -16%; transform: scaleX(1); }
+  }
+  @keyframes swimL {
+    0%   { left: 110%; transform: scaleX(-1); }
+    49%  { left: -16%; transform: scaleX(-1); }
+    50%  { left: -16%; transform: scaleX(1); }
+    99%  { left: 110%; transform: scaleX(1); }
+    100% { left: 110%; transform: scaleX(-1); }
+  }
+
+  /* 泡 */
+  .bubble {
+    position: absolute; bottom: 10%;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(255,255,255,.2));
+    opacity: 0;
+    animation: rise linear infinite;
+  }
+  @keyframes rise {
+    0%   { transform: translateY(0) translateX(0); opacity: 0; }
+    10%  { opacity: .8; }
+    100% { transform: translateY(-90vh) translateX(14px); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="tank">
+  <div class="rays"></div>
+  <div class="caustics"></div>
+
+  <!-- 水草 -->
+  <div class="plant p1">
+    <svg width="44" height="120" viewBox="0 0 44 120">
+      <path d="M22 120 C8 90 6 60 18 30 C20 24 16 12 22 0 C28 12 24 24 26 30 C38 60 36 90 22 120 Z" fill="#8fc7a6" opacity=".85"/>
+      <path d="M22 120 C16 96 14 70 22 44" stroke="#6fb18c" stroke-width="2" fill="none" opacity=".6"/>
+    </svg>
+  </div>
+  <div class="plant p2">
+    <svg width="36" height="100" viewBox="0 0 36 100">
+      <path d="M18 100 C6 76 4 50 14 24 C16 18 12 8 18 0 C24 8 20 18 22 24 C32 50 30 76 18 100 Z" fill="#a6d2bb" opacity=".8"/>
+    </svg>
+  </div>
+  <div class="plant p3">
+    <svg width="40" height="110" viewBox="0 0 40 110">
+      <path d="M20 110 C7 82 5 54 16 28 C18 22 14 10 20 0 C26 10 22 22 24 28 C35 54 33 82 20 110 Z" fill="#86c2a0" opacity=".82"/>
+    </svg>
+  </div>
+  <div class="plant p4">
+    <svg width="30" height="84" viewBox="0 0 36 100">
+      <path d="M18 100 C6 76 4 50 14 24 C16 18 12 8 18 0 C24 8 20 18 22 24 C32 50 30 76 18 100 Z" fill="#b3d8c4" opacity=".75"/>
+    </svg>
+  </div>
+
+  <!-- 錦鯉たち -->
+  <!-- koi1: 紅白 -->
+  <div class="fish koi1">
+    <svg class="body" width="120" height="60" viewBox="0 0 120 60">
+      <defs>
+        <radialGradient id="koiA" cx="40%" cy="40%" r="70%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#f2f6f8"/>
+        </radialGradient>
+      </defs>
+      <!-- 尾びれ -->
+      <path d="M14 30 C2 16 0 44 14 30 Z" fill="#fbe2d2" opacity=".9"/>
+      <path d="M14 30 C2 44 0 16 14 30 Z" fill="#fdeede" opacity=".8"/>
+      <!-- 体 -->
+      <ellipse cx="62" cy="30" rx="48" ry="16" fill="url(#koiA)" stroke="#e4ecf0" stroke-width="1"/>
+      <!-- 紅斑 -->
+      <path d="M40 22 C52 14 64 18 60 30 C56 40 44 38 40 30 Z" fill="#f2956b" opacity=".92"/>
+      <path d="M78 24 C90 20 96 30 86 36 C78 40 72 32 78 24 Z" fill="#ef8a5d" opacity=".9"/>
+      <!-- 胸びれ -->
+      <path d="M64 42 C58 52 74 50 70 42 Z" fill="#fbe2d2" opacity=".85"/>
+      <!-- 目 -->
+      <circle cx="100" cy="28" r="2.4" fill="#3a3a3a"/>
+    </svg>
+  </div>
+
+  <!-- koi2: 黒赤 -->
+  <div class="fish koi2">
+    <svg class="body" width="110" height="56" viewBox="0 0 120 60">
+      <defs>
+        <radialGradient id="koiB" cx="40%" cy="40%" r="70%">
+          <stop offset="0%" stop-color="#fdfdfd"/>
+          <stop offset="100%" stop-color="#eef3f5"/>
+        </radialGradient>
+      </defs>
+      <path d="M14 30 C2 16 0 44 14 30 Z" fill="#cdd9de" opacity=".9"/>
+      <path d="M14 30 C2 44 0 16 14 30 Z" fill="#dde7eb" opacity=".8"/>
+      <ellipse cx="62" cy="30" rx="48" ry="16" fill="url(#koiB)" stroke="#e4ecf0" stroke-width="1"/>
+      <path d="M38 20 C52 14 60 22 54 30 C48 38 38 34 38 24 Z" fill="#3f4a52" opacity=".9"/>
+      <path d="M74 26 C86 20 94 28 86 36 C78 42 70 34 74 26 Z" fill="#ef8a5d" opacity=".9"/>
+      <path d="M64 42 C58 52 74 50 70 42 Z" fill="#cdd9de" opacity=".85"/>
+      <circle cx="100" cy="28" r="2.4" fill="#3a3a3a"/>
+    </svg>
+  </div>
+
+  <!-- koi3: 黄金 -->
+  <div class="fish koi3">
+    <svg class="body" width="100" height="50" viewBox="0 0 120 60">
+      <defs>
+        <radialGradient id="koiC" cx="40%" cy="40%" r="70%">
+          <stop offset="0%" stop-color="#fff7e6"/>
+          <stop offset="100%" stop-color="#f6ecd2"/>
+        </radialGradient>
+      </defs>
+      <path d="M14 30 C2 16 0 44 14 30 Z" fill="#f3e4c2" opacity=".9"/>
+      <path d="M14 30 C2 44 0 16 14 30 Z" fill="#f8eed4" opacity=".8"/>
+      <ellipse cx="62" cy="30" rx="48" ry="16" fill="url(#koiC)" stroke="#ece0c2" stroke-width="1"/>
+      <path d="M64 42 C58 52 74 50 70 42 Z" fill="#f3e4c2" opacity=".85"/>
+      <circle cx="100" cy="28" r="2.2" fill="#5a4a2a"/>
+    </svg>
+  </div>
+
+  <div class="sand"></div>
+
+  <!-- 泡 -->
+  <div class="bubble" style="left:12%; animation-duration:11s; animation-delay:0s;"></div>
+  <div class="bubble" style="left:30%; width:5px;height:5px; animation-duration:14s; animation-delay:3s;"></div>
+  <div class="bubble" style="left:52%; width:6px;height:6px; animation-duration:12s; animation-delay:6s;"></div>
+  <div class="bubble" style="left:70%; animation-duration:15s; animation-delay:2s;"></div>
+  <div class="bubble" style="left:86%; width:5px;height:5px; animation-duration:13s; animation-delay:5s;"></div>
+</div>
+</body>
+</html>
