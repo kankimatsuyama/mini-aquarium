@@ -3,205 +3,419 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>mini aquarium</title>
+<title>水面の錦鯉</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { width: 100%; height: 100%; overflow: hidden; }
-  .tank {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    min-height: 240px;
-    background: linear-gradient(180deg,
-      #dff1f6 0%,
-      #cfeaf1 22%,
-      #bfe2ec 48%,
-      #aed9e6 72%,
-      #b8ddd8 100%);
+  body {
+    background: #7bbfcf;
     overflow: hidden;
-    font-family: sans-serif;
+    width: 100vw;
+    height: 100vh;
   }
-
-  /* 水面の光のゆらぎ */
-  .caustics {
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(120px 60px at 20% 15%, rgba(255,255,255,.55), transparent 70%),
-      radial-gradient(160px 70px at 55% 10%, rgba(255,255,255,.45), transparent 70%),
-      radial-gradient(140px 60px at 80% 18%, rgba(255,255,255,.5), transparent 70%);
-    mix-blend-mode: screen;
-    animation: shimmer 9s ease-in-out infinite alternate;
-  }
-  @keyframes shimmer {
-    0%   { transform: translateX(-20px) scaleY(1);   opacity: .8; }
-    100% { transform: translateX(20px)  scaleY(1.08); opacity: 1; }
-  }
-
-  /* 日差し */
-  .rays {
-    position: absolute; inset: 0;
-    background:
-      linear-gradient(105deg, transparent 30%, rgba(255,255,255,.25) 38%, transparent 46%),
-      linear-gradient(80deg, transparent 55%, rgba(255,255,255,.18) 62%, transparent 70%);
-    animation: rays 12s ease-in-out infinite alternate;
-  }
-  @keyframes rays { 0%{opacity:.5} 100%{opacity:.9} }
-
-  /* 砂地 */
-  .sand {
-    position: absolute; left: 0; right: 0; bottom: 0;
-    height: 16%;
-    background: linear-gradient(180deg, rgba(228,238,224,0) 0%, #e8f0df 60%, #dfe9d4 100%);
-  }
-
-  /* 水草 */
-  .plant { position: absolute; bottom: 6%; transform-origin: bottom center; }
-  .plant svg { display: block; }
-  .p1 { left: 8%;  animation: sway 5.5s ease-in-out infinite alternate; }
-  .p2 { left: 16%; animation: sway 6.8s ease-in-out infinite alternate; transform: scale(.8); }
-  .p3 { right: 12%; animation: sway 6.2s ease-in-out infinite alternate-reverse; }
-  .p4 { right: 22%; animation: sway 7.4s ease-in-out infinite alternate; transform: scale(.7); }
-  @keyframes sway { 0%{transform:rotate(-4deg)} 100%{transform:rotate(4deg)} }
-
-  /* 魚 */
-  .fish { position: absolute; will-change: transform; }
-  .fish .body { animation: wiggle 1.6s ease-in-out infinite; transform-origin: center; }
-  @keyframes wiggle {
-    0%,100% { transform: rotate(-1.5deg); }
-    50%     { transform: rotate(1.5deg); }
-  }
-
-  .koi1 { top: 38%; animation: swimR 26s linear infinite; }
-  .koi2 { top: 58%; animation: swimL 32s linear infinite; }
-  .koi3 { top: 30%; animation: swimR 38s linear infinite; transform: scale(.75); }
-
-  @keyframes swimR {
-    0%   { left: -16%; }
-    49%  { left: 110%; transform: scaleX(1); }
-    50%  { left: 110%; transform: scaleX(-1); }
-    99%  { left: -16%; transform: scaleX(-1); }
-    100% { left: -16%; transform: scaleX(1); }
-  }
-  @keyframes swimL {
-    0%   { left: 110%; transform: scaleX(-1); }
-    49%  { left: -16%; transform: scaleX(-1); }
-    50%  { left: -16%; transform: scaleX(1); }
-    99%  { left: 110%; transform: scaleX(1); }
-    100% { left: 110%; transform: scaleX(-1); }
-  }
-
-  /* 泡 */
-  .bubble {
-    position: absolute; bottom: 10%;
-    width: 8px; height: 8px; border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(255,255,255,.2));
-    opacity: 0;
-    animation: rise linear infinite;
-  }
-  @keyframes rise {
-    0%   { transform: translateY(0) translateX(0); opacity: 0; }
-    10%  { opacity: .8; }
-    100% { transform: translateY(-90vh) translateX(14px); opacity: 0; }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 </style>
 </head>
 <body>
-<div class="tank">
-  <div class="rays"></div>
-  <div class="caustics"></div>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
 
-  <!-- 水草 -->
-  <div class="plant p1">
-    <svg width="44" height="120" viewBox="0 0 44 120">
-      <path d="M22 120 C8 90 6 60 18 30 C20 24 16 12 22 0 C28 12 24 24 26 30 C38 60 36 90 22 120 Z" fill="#8fc7a6" opacity=".85"/>
-      <path d="M22 120 C16 96 14 70 22 44" stroke="#6fb18c" stroke-width="2" fill="none" opacity=".6"/>
-    </svg>
-  </div>
-  <div class="plant p2">
-    <svg width="36" height="100" viewBox="0 0 36 100">
-      <path d="M18 100 C6 76 4 50 14 24 C16 18 12 8 18 0 C24 8 20 18 22 24 C32 50 30 76 18 100 Z" fill="#a6d2bb" opacity=".8"/>
-    </svg>
-  </div>
-  <div class="plant p3">
-    <svg width="40" height="110" viewBox="0 0 40 110">
-      <path d="M20 110 C7 82 5 54 16 28 C18 22 14 10 20 0 C26 10 22 22 24 28 C35 54 33 82 20 110 Z" fill="#86c2a0" opacity=".82"/>
-    </svg>
-  </div>
-  <div class="plant p4">
-    <svg width="30" height="84" viewBox="0 0 36 100">
-      <path d="M18 100 C6 76 4 50 14 24 C16 18 12 8 18 0 C24 8 20 18 22 24 C32 50 30 76 18 100 Z" fill="#b3d8c4" opacity=".75"/>
-    </svg>
-  </div>
+let W, H;
+function resize() {
+  W = canvas.width = canvas.offsetWidth;
+  H = canvas.height = canvas.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
 
-  <!-- 錦鯉たち -->
-  <!-- koi1: 紅白 -->
-  <div class="fish koi1">
-    <svg class="body" width="120" height="60" viewBox="0 0 120 60">
-      <defs>
-        <radialGradient id="koiA" cx="40%" cy="40%" r="70%">
-          <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="100%" stop-color="#f2f6f8"/>
-        </radialGradient>
-      </defs>
-      <!-- 尾びれ -->
-      <path d="M14 30 C2 16 0 44 14 30 Z" fill="#fbe2d2" opacity=".9"/>
-      <path d="M14 30 C2 44 0 16 14 30 Z" fill="#fdeede" opacity=".8"/>
-      <!-- 体 -->
-      <ellipse cx="62" cy="30" rx="48" ry="16" fill="url(#koiA)" stroke="#e4ecf0" stroke-width="1"/>
-      <!-- 紅斑 -->
-      <path d="M40 22 C52 14 64 18 60 30 C56 40 44 38 40 30 Z" fill="#f2956b" opacity=".92"/>
-      <path d="M78 24 C90 20 96 30 86 36 C78 40 72 32 78 24 Z" fill="#ef8a5d" opacity=".9"/>
-      <!-- 胸びれ -->
-      <path d="M64 42 C58 52 74 50 70 42 Z" fill="#fbe2d2" opacity=".85"/>
-      <!-- 目 -->
-      <circle cx="100" cy="28" r="2.4" fill="#3a3a3a"/>
-    </svg>
-  </div>
+// --- 雨粒 ---
+const raindrops = [];
+for (let i = 0; i < 60; i++) {
+  raindrops.push({
+    x: Math.random() * 1200,
+    y: Math.random() * 800,
+    delay: Math.random() * 3,
+    speed: 0.3 + Math.random() * 0.4
+  });
+}
 
-  <!-- koi2: 黒赤 -->
-  <div class="fish koi2">
-    <svg class="body" width="110" height="56" viewBox="0 0 120 60">
-      <defs>
-        <radialGradient id="koiB" cx="40%" cy="40%" r="70%">
-          <stop offset="0%" stop-color="#fdfdfd"/>
-          <stop offset="100%" stop-color="#eef3f5"/>
-        </radialGradient>
-      </defs>
-      <path d="M14 30 C2 16 0 44 14 30 Z" fill="#cdd9de" opacity=".9"/>
-      <path d="M14 30 C2 44 0 16 14 30 Z" fill="#dde7eb" opacity=".8"/>
-      <ellipse cx="62" cy="30" rx="48" ry="16" fill="url(#koiB)" stroke="#e4ecf0" stroke-width="1"/>
-      <path d="M38 20 C52 14 60 22 54 30 C48 38 38 34 38 24 Z" fill="#3f4a52" opacity=".9"/>
-      <path d="M74 26 C86 20 94 28 86 36 C78 42 70 34 74 26 Z" fill="#ef8a5d" opacity=".9"/>
-      <path d="M64 42 C58 52 74 50 70 42 Z" fill="#cdd9de" opacity=".85"/>
-      <circle cx="100" cy="28" r="2.4" fill="#3a3a3a"/>
-    </svg>
-  </div>
+// --- 波紋 ---
+const ripples = [];
+function addRipple(x, y) {
+  ripples.push({ x, y, r: 0, maxR: 30 + Math.random() * 20, alpha: 0.6, speed: 0.5 + Math.random() * 0.3 });
+}
+setInterval(() => {
+  addRipple(Math.random() * 1200, Math.random() * 800);
+}, 400);
 
-  <!-- koi3: 黄金 -->
-  <div class="fish koi3">
-    <svg class="body" width="100" height="50" viewBox="0 0 120 60">
-      <defs>
-        <radialGradient id="koiC" cx="40%" cy="40%" r="70%">
-          <stop offset="0%" stop-color="#fff7e6"/>
-          <stop offset="100%" stop-color="#f6ecd2"/>
-        </radialGradient>
-      </defs>
-      <path d="M14 30 C2 16 0 44 14 30 Z" fill="#f3e4c2" opacity=".9"/>
-      <path d="M14 30 C2 44 0 16 14 30 Z" fill="#f8eed4" opacity=".8"/>
-      <ellipse cx="62" cy="30" rx="48" ry="16" fill="url(#koiC)" stroke="#ece0c2" stroke-width="1"/>
-      <path d="M64 42 C58 52 74 50 70 42 Z" fill="#f3e4c2" opacity=".85"/>
-      <circle cx="100" cy="28" r="2.2" fill="#5a4a2a"/>
-    </svg>
-  </div>
+// --- 錦鯉 ---
+class Koi {
+  constructor(color1, color2, x, y, size) {
+    this.color1 = color1;
+    this.color2 = color2;
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.angle = Math.random() * Math.PI * 2;
+    this.speed = 0.4 + Math.random() * 0.3;
+    this.turnSpeed = 0.01 + Math.random() * 0.02;
+    this.turnDir = Math.random() > 0.5 ? 1 : -1;
+    this.timer = 0;
+    this.turnTimer = Math.random() * 200;
+    this.tail = 0;
+  }
+  update() {
+    this.timer++;
+    this.tail = Math.sin(this.timer * 0.12) * 0.3;
 
-  <div class="sand"></div>
+    // たまに方向転換
+    if (this.timer > this.turnTimer) {
+      this.turnDir = Math.random() > 0.5 ? 1 : -1;
+      this.turnTimer = this.timer + 80 + Math.random() * 150;
+    }
+    this.angle += this.turnSpeed * this.turnDir;
 
-  <!-- 泡 -->
-  <div class="bubble" style="left:12%; animation-duration:11s; animation-delay:0s;"></div>
-  <div class="bubble" style="left:30%; width:5px;height:5px; animation-duration:14s; animation-delay:3s;"></div>
-  <div class="bubble" style="left:52%; width:6px;height:6px; animation-duration:12s; animation-delay:6s;"></div>
-  <div class="bubble" style="left:70%; animation-duration:15s; animation-delay:2s;"></div>
-  <div class="bubble" style="left:86%; width:5px;height:5px; animation-duration:13s; animation-delay:5s;"></div>
-</div>
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed;
+
+    // 壁で跳ね返る
+    if (this.x < 50) { this.angle = 0; }
+    if (this.x > W - 50) { this.angle = Math.PI; }
+    if (this.y < 50) { this.angle = Math.PI / 2; }
+    if (this.y > H - 50) { this.angle = -Math.PI / 2; }
+  }
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle + Math.PI / 2);
+
+    const s = this.size;
+
+    // 尾ひれ
+    ctx.save();
+    ctx.rotate(this.tail);
+    ctx.beginPath();
+    ctx.moveTo(0, s * 0.6);
+    ctx.bezierCurveTo(-s * 0.5, s * 1.1, -s * 0.7, s * 1.5, 0, s * 1.6);
+    ctx.bezierCurveTo(s * 0.7, s * 1.5, s * 0.5, s * 1.1, 0, s * 0.6);
+    ctx.fillStyle = this.color2 + 'bb';
+    ctx.fill();
+    ctx.restore();
+
+    // 体（楕円）
+    const grad = ctx.createRadialGradient(0, 0, s * 0.1, 0, s * 0.1, s * 0.7);
+    grad.addColorStop(0, this.color1);
+    grad.addColorStop(0.5, this.color2);
+    grad.addColorStop(1, this.color1 + '99');
+    ctx.beginPath();
+    ctx.ellipse(0, 0, s * 0.38, s * 0.7, 0, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // 模様
+    ctx.beginPath();
+    ctx.ellipse(s * 0.1, -s * 0.1, s * 0.18, s * 0.22, 0.4, 0, Math.PI * 2);
+    ctx.fillStyle = this.color2 + 'cc';
+    ctx.fill();
+
+    // 目
+    ctx.beginPath();
+    ctx.arc(-s * 0.15, -s * 0.5, s * 0.07, 0, Math.PI * 2);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-s * 0.13, -s * 0.51, s * 0.03, 0, Math.PI * 2);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+const kois = [
+  new Koi('#e8453c', '#f5f5f0', 200, 200, 22),  // 紅白
+  new Koi('#e8453c', '#1a1a2e', 400, 300, 18),  // 赤黒
+  new Koi('#f0c040', '#f5f5f0', 300, 400, 20),  // 黄白（山吹）
+];
+
+// --- 紫陽花の花びら ---
+const petals = [];
+for (let i = 0; i < 18; i++) {
+  petals.push({
+    x: Math.random() * 1200,
+    y: Math.random() * 800,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.2,
+    r: 4 + Math.random() * 5,
+    color: Math.random() > 0.5 ? '#a8c8e8' : '#c8b8e0',
+    alpha: 0.5 + Math.random() * 0.4,
+    rot: Math.random() * Math.PI * 2,
+  });
+}
+
+// --- 黒猫（端から覗き込む） ---
+function drawCat() {
+  const cx = W * 0.08;
+  const cy = H * 0.82;
+  const s = Math.min(W, H) * 0.09;
+
+  ctx.save();
+
+  // 体（丸っこいシルエット）
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + s * 0.3, s * 0.5, s * 0.6, -0.2, 0, Math.PI * 2);
+  ctx.fillStyle = '#111118';
+  ctx.fill();
+
+  // 頭
+  ctx.beginPath();
+  ctx.arc(cx + s * 0.1, cy - s * 0.3, s * 0.42, 0, Math.PI * 2);
+  ctx.fillStyle = '#111118';
+  ctx.fill();
+
+  // 耳（左）
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.18, cy - s * 0.6);
+  ctx.lineTo(cx - s * 0.35, cy - s * 1.0);
+  ctx.lineTo(cx, cy - s * 0.7);
+  ctx.fillStyle = '#111118';
+  ctx.fill();
+
+  // 耳（右）
+  ctx.beginPath();
+  ctx.moveTo(cx + s * 0.25, cy - s * 0.6);
+  ctx.lineTo(cx + s * 0.5, cy - s * 0.95);
+  ctx.lineTo(cx + s * 0.42, cy - s * 0.62);
+  ctx.fillStyle = '#111118';
+  ctx.fill();
+
+  // 目（左）
+  ctx.beginPath();
+  ctx.ellipse(cx - s * 0.1, cy - s * 0.32, s * 0.09, s * 0.06, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#f0d060';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx - s * 0.1, cy - s * 0.32, s * 0.04, s * 0.06, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#111118';
+  ctx.fill();
+
+  // 目（右）
+  ctx.beginPath();
+  ctx.ellipse(cx + s * 0.28, cy - s * 0.35, s * 0.09, s * 0.06, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#f0d060';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx + s * 0.28, cy - s * 0.35, s * 0.04, s * 0.06, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#111118';
+  ctx.fill();
+
+  // ひげ
+  ctx.strokeStyle = '#aaaaaa44';
+  ctx.lineWidth = 0.8;
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.moveTo(cx + s * 0.1, cy - s * 0.15 + i * s * 0.08);
+    ctx.lineTo(cx - s * 0.6, cy - s * 0.22 + i * s * 0.12);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx + s * 0.1, cy - s * 0.15 + i * s * 0.08);
+    ctx.lineTo(cx + s * 0.75, cy - s * 0.2 + i * s * 0.1);
+    ctx.stroke();
+  }
+
+  // 尻尾
+  ctx.beginPath();
+  ctx.moveTo(cx + s * 0.4, cy + s * 0.7);
+  ctx.bezierCurveTo(cx + s * 1.2, cy + s * 0.9, cx + s * 1.5, cy + s * 0.3, cx + s * 1.1, cy + s * 0.0);
+  ctx.strokeStyle = '#111118';
+  ctx.lineWidth = s * 0.18;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// --- 水面の光ゆらぎ ---
+let shimmerOffset = 0;
+
+function drawWater() {
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#5aaecc');
+  grad.addColorStop(0.4, '#7ecfca');
+  grad.addColorStop(0.7, '#6abccc');
+  grad.addColorStop(1, '#4a9ab8');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 光のゆらぎ線
+  shimmerOffset += 0.008;
+  ctx.save();
+  ctx.globalAlpha = 0.08;
+  for (let i = 0; i < 12; i++) {
+    const y = (H / 12) * i + Math.sin(shimmerOffset + i * 0.7) * 15;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    for (let x = 0; x <= W; x += 40) {
+      ctx.lineTo(x, y + Math.sin(shimmerOffset * 2 + x * 0.015 + i) * 8);
+    }
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// --- 紫陽花（背景） ---
+function drawHydrangea() {
+  // 右上に紫陽花の茂み
+  const hx = W * 0.85, hy = H * 0.05;
+  const clusterSize = Math.min(W, H) * 0.22;
+
+  // 葉
+  const leaves = [
+    { ox: -0.3, oy: 0.5, rot: 0.3 },
+    { ox: 0.1, oy: 0.7, rot: -0.2 },
+    { ox: 0.4, oy: 0.4, rot: 0.5 },
+    { ox: -0.1, oy: 0.3, rot: -0.4 },
+    { ox: 0.6, oy: 0.6, rot: 0.1 },
+  ];
+  for (const l of leaves) {
+    ctx.save();
+    ctx.translate(hx + l.ox * clusterSize, hy + l.oy * clusterSize);
+    ctx.rotate(l.rot);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, clusterSize * 0.22, clusterSize * 0.14, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#5a9a5a99';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // 花
+  const flowers = [
+    { ox: 0, oy: 0, color: '#a0b8e0' },
+    { ox: 0.25, oy: 0.1, color: '#b8a8d8' },
+    { ox: -0.15, oy: 0.18, color: '#90b0d8' },
+    { ox: 0.12, oy: 0.3, color: '#c0c8e8' },
+    { ox: -0.08, oy: -0.05, color: '#a8b8e4' },
+    { ox: 0.35, oy: 0.28, color: '#b0a8dc' },
+  ];
+  for (const f of flowers) {
+    const fx = hx + f.ox * clusterSize;
+    const fy = hy + f.oy * clusterSize;
+    const fr = clusterSize * 0.12;
+    // 4枚の花びら
+    for (let p = 0; p < 4; p++) {
+      const a = (p / 4) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.ellipse(fx + Math.cos(a) * fr * 0.5, fy + Math.sin(a) * fr * 0.5, fr * 0.55, fr * 0.4, a, 0, Math.PI * 2);
+      ctx.fillStyle = f.color + 'cc';
+      ctx.fill();
+    }
+    // 中心
+    ctx.beginPath();
+    ctx.arc(fx, fy, fr * 0.25, 0, Math.PI * 2);
+    ctx.fillStyle = '#e8e0f0dd';
+    ctx.fill();
+  }
+}
+
+// --- 石板（縁） ---
+function drawStoneEdge() {
+  // 左下の石
+  ctx.fillStyle = '#d8d4c8cc';
+  ctx.beginPath();
+  ctx.ellipse(W * 0.04, H * 1.05, W * 0.12, H * 0.18, -0.1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#c8c4b8cc';
+  ctx.beginPath();
+  ctx.ellipse(W * 0.01, H * 0.95, W * 0.08, H * 0.1, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+let t = 0;
+function draw() {
+  t++;
+  ctx.clearRect(0, 0, W, H);
+
+  drawWater();
+  drawHydrangea();
+  drawStoneEdge();
+
+  // 花びら浮遊
+  for (const p of petals) {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.rot += 0.005;
+    if (p.x < -10) p.x = W + 10;
+    if (p.x > W + 10) p.x = -10;
+    if (p.y < -10) p.y = H + 10;
+    if (p.y > H + 10) p.y = -10;
+
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.globalAlpha = p.alpha;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, p.r, p.r * 0.6, 0, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // 波紋
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const rp = ripples[i];
+    rp.r += rp.speed;
+    rp.alpha -= 0.008;
+    if (rp.alpha <= 0) { ripples.splice(i, 1); continue; }
+    ctx.beginPath();
+    ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255,255,255,${rp.alpha})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // 二重波紋
+    if (rp.r > 8) {
+      ctx.beginPath();
+      ctx.arc(rp.x, rp.y, rp.r * 0.6, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,255,255,${rp.alpha * 0.5})`;
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+    }
+  }
+
+  // 錦鯉
+  for (const k of kois) {
+    k.update();
+    k.draw();
+  }
+
+  // 黒猫
+  drawCat();
+
+  // 雨
+  ctx.save();
+  ctx.strokeStyle = 'rgba(200,230,245,0.45)';
+  ctx.lineWidth = 0.8;
+  for (const rd of raindrops) {
+    rd.y += rd.speed * 3;
+    rd.x -= 0.3;
+    if (rd.y > H) { rd.y = -10; rd.x = Math.random() * W; }
+    ctx.beginPath();
+    ctx.moveTo(rd.x, rd.y);
+    ctx.lineTo(rd.x - 3, rd.y + 8);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
 </body>
 </html>
